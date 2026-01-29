@@ -40,14 +40,14 @@ export default function Reports() {
     if (type === 'sales') {
       csvContent = 'Date,Sale ID,Total Amount,Items,User\n';
       sales.forEach((sale) => {
-        csvContent += `${format(new Date(sale.sale_date), 'yyyy-MM-dd HH:mm')},${sale.id},$${Number(sale.total_amount).toFixed(2)},${sale.sale_items?.length || 0},${sale.profiles?.full_name || 'Unknown'}\n`;
+        csvContent += `${format(new Date(sale.sale_date), 'yyyy-MM-dd HH:mm')},${sale.id},KSH ${Number(sale.total_amount).toFixed(2)},${sale.sale_items?.length || 0},${sale.profiles?.full_name || 'Unknown'}\n`;
       });
       filename = `sales-report-${format(dateRange.from, 'yyyy-MM-dd')}-to-${format(dateRange.to, 'yyyy-MM-dd')}.csv`;
     } else {
       csvContent = 'Product,SKU,Category,Stock Quantity,Min Level,Buying Price,Selling Price,Stock Value\n';
       products.forEach((product) => {
         const stockValue = product.stock_quantity * Number(product.selling_price);
-        csvContent += `"${product.name}",${product.sku || ''},${product.category || ''},${product.stock_quantity},${product.minimum_stock_level},$${Number(product.buying_price).toFixed(2)},$${Number(product.selling_price).toFixed(2)},$${stockValue.toFixed(2)}\n`;
+        csvContent += `"${product.name}",${product.sku || ''},${product.category || ''},${product.stock_quantity},${product.minimum_stock_level},KSH ${Number(product.buying_price).toFixed(2)},KSH ${Number(product.selling_price).toFixed(2)},KSH ${stockValue.toFixed(2)}\n`;
       });
       filename = `stock-report-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     }
@@ -132,7 +132,7 @@ export default function Reports() {
             <Card>
               <CardContent className="p-6">
                 <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-                <p className="text-3xl font-bold text-primary">${totalRevenue.toFixed(2)}</p>
+                <p className="text-3xl font-bold text-primary">KSH {totalRevenue.toFixed(2)}</p>
               </CardContent>
             </Card>
             <Card>
@@ -192,7 +192,7 @@ export default function Reports() {
                           </TableCell>
                           <TableCell>{sale.profiles?.full_name || 'Unknown'}</TableCell>
                           <TableCell className="text-right font-medium">
-                            ${Number(sale.total_amount).toFixed(2)}
+                            KSH {Number(sale.total_amount).toFixed(2)}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -232,7 +232,7 @@ export default function Reports() {
               <CardContent className="p-6">
                 <p className="text-sm font-medium text-muted-foreground">Stock Value</p>
                 <p className="text-3xl font-bold text-primary">
-                  ${products.reduce((sum, p) => sum + p.stock_quantity * Number(p.selling_price), 0).toFixed(2)}
+                  KSH {products.reduce((sum, p) => sum + p.stock_quantity * Number(p.selling_price), 0).toFixed(2)}
                 </p>
               </CardContent>
             </Card>
@@ -283,10 +283,10 @@ export default function Reports() {
                             </TableCell>
                             <TableCell className="text-right">{product.minimum_stock_level}</TableCell>
                             <TableCell className="text-right">
-                              ${Number(product.selling_price).toFixed(2)}
+                              KSH {Number(product.selling_price).toFixed(2)}
                             </TableCell>
                             <TableCell className="text-right font-medium">
-                              ${stockValue.toFixed(2)}
+                              KSH {stockValue.toFixed(2)}
                             </TableCell>
                           </TableRow>
                         );

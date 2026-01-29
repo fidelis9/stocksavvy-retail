@@ -39,14 +39,15 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile header */}
-      <div className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center justify-between border-b bg-card px-4 lg:hidden">
-        <div className="flex items-center gap-2">
-          <Package className="h-6 w-6 text-primary" />
-          <span className="font-semibold">StockFlow</span>
+      <div className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center border-b bg-card px-4 lg:hidden">
+        <div className="flex flex-1 items-center gap-2">
+          <Package className="h-6 w-6 flex-shrink-0 text-primary" />
+          <span className="truncate font-semibold">StockFlow</span>
         </div>
         <Button
           variant="ghost"
           size="icon"
+          className="flex-shrink-0"
           onClick={() => setCollapsed(!collapsed)}
         >
           <Menu className="h-5 w-5" />
