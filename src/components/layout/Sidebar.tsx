@@ -40,10 +40,10 @@ export default function Sidebar() {
     <>
       {/* Mobile header */}
       <div className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center border-b bg-card px-4 lg:hidden">
-        <div className="flex flex-1 items-center gap-2">
-          <Package className="h-6 w-6 flex-shrink-0 text-primary" />
-          <span className="truncate font-semibold">StockFlow</span>
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+          <Package className="h-5 w-5 text-primary-foreground" />
         </div>
+        <span className="ml-3 flex-1 truncate font-semibold">StockFlow</span>
         <Button
           variant="ghost"
           size="icon"
@@ -61,8 +61,8 @@ export default function Sidebar() {
           collapsed ? "w-0 lg:w-16 -translate-x-full lg:translate-x-0" : "w-64"
         )}
       >
-        {/* Header */}
-        <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
+        {/* Header - hidden on mobile since we have mobile header */}
+        <div className="hidden h-16 items-center justify-between border-b border-sidebar-border px-4 lg:flex">
           <div className={cn("flex items-center gap-3", collapsed && "lg:justify-center")}>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary">
               <Package className="h-5 w-5 text-sidebar-primary-foreground" />
@@ -74,7 +74,7 @@ export default function Sidebar() {
           <Button
             variant="ghost"
             size="icon"
-            className="hidden text-sidebar-foreground hover:bg-sidebar-accent lg:flex"
+            className="text-sidebar-foreground hover:bg-sidebar-accent"
             onClick={() => setCollapsed(!collapsed)}
           >
             <ChevronLeft className={cn("h-5 w-5 transition-transform", collapsed && "rotate-180")} />
