@@ -99,7 +99,7 @@ export default function Sales() {
       }));
 
       await createSale.mutateAsync(saleItems);
-      toast.success(`Sale completed! Total: $${cartTotal.toFixed(2)}`);
+      toast.success(`Sale completed! Total: KSH ${cartTotal.toFixed(2)}`);
       setCart([]);
     } catch (error) {
       toast.error('Failed to complete sale');
@@ -158,7 +158,7 @@ export default function Sales() {
                       <div className="flex-1">
                         <p className="font-medium">{product.name}</p>
                         <p className="text-lg font-bold text-primary">
-                          ${Number(product.selling_price).toFixed(2)}
+                          KSH {Number(product.selling_price).toFixed(2)}
                         </p>
                       </div>
                       <Badge variant="secondary">
@@ -204,7 +204,7 @@ export default function Sales() {
                         <div className="flex-1">
                           <p className="font-medium">{item.product.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            ${item.unit_price.toFixed(2)} each
+                            KSH {item.unit_price.toFixed(2)} each
                           </p>
                         </div>
                         <Button
@@ -242,7 +242,7 @@ export default function Sales() {
                             <Plus className="h-4 w-4" />
                           </Button>
                         </div>
-                        <p className="font-semibold">${item.total_price.toFixed(2)}</p>
+                        <p className="font-semibold">KSH {item.total_price.toFixed(2)}</p>
                       </div>
                     </div>
                   ))}
@@ -251,7 +251,7 @@ export default function Sales() {
                 <div className="border-t pt-4">
                   <div className="flex items-center justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span className="text-primary">${cartTotal.toFixed(2)}</span>
+                    <span className="text-primary">KSH {cartTotal.toFixed(2)}</span>
                   </div>
                 </div>
 

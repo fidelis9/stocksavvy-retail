@@ -83,25 +83,25 @@ function ProductForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="buying_price">Buying Price</Label>
+          <Label htmlFor="buying_price">Buying Price (KSH)</Label>
           <Input
             id="buying_price"
             type="number"
             step="0.01"
             min="0"
-            value={formData.buying_price}
-            onChange={(e) => setFormData({ ...formData, buying_price: parseFloat(e.target.value) || 0 })}
+            value={formData.buying_price === 0 ? '' : formData.buying_price}
+            onChange={(e) => setFormData({ ...formData, buying_price: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="selling_price">Selling Price</Label>
+          <Label htmlFor="selling_price">Selling Price (KSH)</Label>
           <Input
             id="selling_price"
             type="number"
             step="0.01"
             min="0"
-            value={formData.selling_price}
-            onChange={(e) => setFormData({ ...formData, selling_price: parseFloat(e.target.value) || 0 })}
+            value={formData.selling_price === 0 ? '' : formData.selling_price}
+            onChange={(e) => setFormData({ ...formData, selling_price: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
           />
         </div>
       </div>
@@ -312,14 +312,14 @@ export default function Products() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Selling Price</span>
                       <span className="font-semibold text-primary">
-                        ${Number(product.selling_price).toFixed(2)}
+                        KSH {Number(product.selling_price).toFixed(2)}
                       </span>
                     </div>
                     {isOwner && (
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Buying Price</span>
                         <span className="text-muted-foreground">
-                          ${Number(product.buying_price).toFixed(2)}
+                          KSH {Number(product.buying_price).toFixed(2)}
                         </span>
                       </div>
                     )}

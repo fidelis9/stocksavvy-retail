@@ -82,13 +82,13 @@ export default function Dashboard() {
         <StatCard
           title="Today's Sales"
           value={todaySales.length}
-          subtitle={`$${todayRevenue.toFixed(2)} revenue`}
+          subtitle={`KSH ${todayRevenue.toFixed(2)} revenue`}
           icon={ShoppingCart}
           variant="success"
         />
         <StatCard
           title="Today's Revenue"
-          value={`$${todayRevenue.toFixed(2)}`}
+          value={`KSH ${todayRevenue.toFixed(2)}`}
           icon={DollarSign}
           variant="info"
         />
@@ -170,7 +170,7 @@ export default function Dashboard() {
                     className="flex items-center justify-between rounded-lg border p-3"
                   >
                     <div>
-                      <p className="font-medium">${Number(sale.total_amount).toFixed(2)}</p>
+                      <p className="font-medium">KSH {Number(sale.total_amount).toFixed(2)}</p>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         {formatDistanceToNow(new Date(sale.sale_date), { addSuffix: true })}
