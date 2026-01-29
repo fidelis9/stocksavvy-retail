@@ -40,7 +40,10 @@ export default function Sidebar() {
     <>
       {/* Mobile header */}
       <div className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center border-b bg-card px-4 lg:hidden">
-        <span className="flex-1 font-semibold">StockFlow</span>
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+          <Package className="h-5 w-5 text-primary-foreground" />
+        </div>
+        <span className="ml-3 flex-1 truncate font-semibold">StockFlow</span>
         <Button
           variant="ghost"
           size="icon"
