@@ -57,7 +57,7 @@ export default function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 flex h-full flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 lg:static",
+          "fixed left-0 top-14 z-50 flex h-[calc(100%-3.5rem)] flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 lg:static lg:top-0 lg:h-full",
           collapsed ? "w-0 lg:w-16 -translate-x-full lg:translate-x-0" : "w-64"
         )}
       >
