@@ -61,16 +61,8 @@ export default function Sidebar() {
           collapsed ? "w-0 lg:w-16 -translate-x-full lg:translate-x-0" : "w-64"
         )}
       >
-        {/* Header - hidden on mobile since we have mobile header */}
-        <div className="hidden h-16 items-center justify-between border-b border-sidebar-border px-4 lg:flex">
-          <div className={cn("flex items-center gap-3", collapsed && "lg:justify-center")}>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary">
-              <Package className="h-5 w-5 text-sidebar-primary-foreground" />
-            </div>
-            {!collapsed && (
-              <span className="font-semibold text-sidebar-foreground">StockFlow</span>
-            )}
-          </div>
+        {/* Desktop header with collapse button */}
+        <div className="hidden h-16 items-center justify-end border-b border-sidebar-border px-4 lg:flex">
           <Button
             variant="ghost"
             size="icon"
