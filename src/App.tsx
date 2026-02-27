@@ -12,6 +12,7 @@ import Sales from "./pages/Sales";
 import StockAdjustments from "./pages/StockAdjustments";
 import Reports from "./pages/Reports";
 import Users from "./pages/Users";
+import Finance from "./pages/Finance";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
