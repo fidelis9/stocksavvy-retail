@@ -123,8 +123,8 @@ function ProductForm({
             id="minimum_stock_level"
             type="number"
             min="0"
-            value={formData.minimum_stock_level}
-            onChange={(e) => setFormData({ ...formData, minimum_stock_level: parseInt(e.target.value) || 0 })}
+            value={formData.minimum_stock_level === 0 ? '' : formData.minimum_stock_level}
+            onChange={(e) => setFormData({ ...formData, minimum_stock_level: e.target.value === '' ? 0 : parseInt(e.target.value) })}
           />
         </div>
       </div>
