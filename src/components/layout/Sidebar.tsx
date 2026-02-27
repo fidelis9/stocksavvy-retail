@@ -8,6 +8,7 @@ import {
   Users, 
   LogOut, 
   TrendingDown,
+  Wallet,
   ChevronLeft,
   Menu
 } from 'lucide-react';
