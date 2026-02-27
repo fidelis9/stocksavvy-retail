@@ -113,8 +113,8 @@ function ProductForm({
             id="stock_quantity"
             type="number"
             min="0"
-            value={formData.stock_quantity}
-            onChange={(e) => setFormData({ ...formData, stock_quantity: parseInt(e.target.value) || 0 })}
+            value={formData.stock_quantity === 0 ? '' : formData.stock_quantity}
+            onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value === '' ? 0 : parseInt(e.target.value) })}
           />
         </div>
         <div className="space-y-2">
