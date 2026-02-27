@@ -67,6 +67,14 @@ const App = () => (
               }
             />
             <Route
+              path="/finance"
+              element={
+                <AppLayout>
+                  <Finance />
+                </AppLayout>
+              }
+            />
+            <Route
               path="/users"
               element={
                 <AppLayout>
