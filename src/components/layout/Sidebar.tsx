@@ -8,6 +8,7 @@ import {
   Users, 
   LogOut, 
   TrendingDown,
+  Wallet,
   ChevronLeft,
   Menu
 } from 'lucide-react';
@@ -21,6 +22,7 @@ const ownerNavItems = [
   { path: '/sales', label: 'Sales', icon: ShoppingCart },
   { path: '/stock-adjustments', label: 'Adjustments', icon: TrendingDown },
   { path: '/reports', label: 'Reports', icon: FileText },
+  { path: '/finance', label: 'Finance', icon: Wallet },
   { path: '/users', label: 'Users', icon: Users },
 ];
 
