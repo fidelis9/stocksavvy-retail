@@ -52,8 +52,10 @@ export default function ResetPassword() {
       if (error) {
         setError(error.message);
       } else {
+        // Ensure the session is refreshed with the updated user
+        await supabase.auth.refreshSession();
         setSuccess(true);
-        setTimeout(() => navigate('/'), 2000);
+        setTimeout(() => navigate('/'), 1500);
       }
     } catch {
       setError('An unexpected error occurred');
