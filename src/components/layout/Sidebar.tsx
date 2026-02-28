@@ -9,7 +9,6 @@ import {
   LogOut, 
   TrendingDown,
   Wallet,
-  ChevronLeft,
   Menu
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,7 @@ const attendantNavItems = [
 export default function Sidebar() {
   const location = useLocation();
   const { signOut, isOwner, user } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = isOwner ? ownerNavItems : attendantNavItems;
 
@@ -50,29 +49,25 @@ export default function Sidebar() {
           variant="ghost"
           size="icon"
           className="flex-shrink-0"
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={() => setMobileOpen(!mobileOpen)}
         >
           <Menu className="h-5 w-5" />
         </Button>
       </div>
 
-      {/* Sidebar */}
+      {/* Sidebar - always visible on desktop */}
       <aside
         className={cn(
-          "fixed left-0 top-14 z-50 flex h-[calc(100%-3.5rem)] flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 overflow-hidden lg:static lg:top-0 lg:h-full",
-          collapsed ? "w-0 -translate-x-full lg:translate-x-0" : "w-64"
+          "fixed left-0 top-14 z-50 flex h-[calc(100%-3.5rem)] w-64 flex-col bg-sidebar text-sidebar-foreground transition-transform duration-300 lg:static lg:top-0 lg:h-full lg:translate-x-0",
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* Desktop header with collapse button */}
-        <div className="hidden h-16 items-center justify-end border-b border-sidebar-border px-4 lg:flex">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-sidebar-foreground hover:bg-sidebar-accent"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            <ChevronLeft className={cn("h-5 w-5 transition-transform", collapsed && "rotate-180")} />
-          </Button>
+        {/* Desktop header */}
+        <div className="hidden h-16 items-center gap-3 border-b border-sidebar-border px-4 lg:flex">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+            <Package className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <span className="font-semibold text-sidebar-foreground">StockFlow</span>
         </div>
 
         {/* Navigation */}
@@ -83,7 +78,7 @@ export default function Sidebar() {
               <Link
                 key={item.path}
                 to={item.path}
-                onClick={() => setCollapsed(true)}
+                onClick={() => setMobileOpen(false)}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                   isActive
@@ -92,7 +87,7 @@ export default function Sidebar() {
                 )}
               >
                 <item.icon className="h-5 w-5 flex-shrink-0" />
-                {!collapsed && <span>{item.label}</span>}
+                <span>{item.label}</span>
               </Link>
             );
           })}
@@ -100,34 +95,29 @@ export default function Sidebar() {
 
         {/* Footer */}
         <div className="border-t border-sidebar-border p-3">
-          {!collapsed && (
-            <div className="mb-3 rounded-lg bg-sidebar-accent/50 px-3 py-2">
-              <p className="text-xs text-sidebar-foreground/70">Signed in as</p>
-              <p className="truncate text-sm font-medium">{user?.email}</p>
-              <span className="mt-1 inline-block rounded bg-sidebar-primary/20 px-2 py-0.5 text-xs font-medium text-sidebar-primary">
-                {isOwner ? 'Owner' : 'Attendant'}
-              </span>
-            </div>
-          )}
+          <div className="mb-3 rounded-lg bg-sidebar-accent/50 px-3 py-2">
+            <p className="text-xs text-sidebar-foreground/70">Signed in as</p>
+            <p className="truncate text-sm font-medium">{user?.email}</p>
+            <span className="mt-1 inline-block rounded bg-sidebar-primary/20 px-2 py-0.5 text-xs font-medium text-sidebar-primary">
+              {isOwner ? 'Owner' : 'Attendant'}
+            </span>
+          </div>
           <Button
             variant="ghost"
-            className={cn(
-              "w-full justify-start text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
-              collapsed && "justify-center px-2"
-            )}
+            className="w-full justify-start text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
             onClick={signOut}
           >
             <LogOut className="h-5 w-5" />
-            {!collapsed && <span className="ml-3">Sign Out</span>}
+            <span className="ml-3">Sign Out</span>
           </Button>
         </div>
       </aside>
 
       {/* Mobile overlay */}
-      {!collapsed && (
+      {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setCollapsed(true)}
+          onClick={() => setMobileOpen(false)}
         />
       )}
     </>
