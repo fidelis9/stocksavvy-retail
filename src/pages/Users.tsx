@@ -25,14 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Users as UsersIcon, Shield, UserCheck, Loader2, UserPlus, ArrowUpDown } from 'lucide-react';
+import { Users as UsersIcon, Shield, UserCheck, Loader2, UserPlus, ArrowUpDown, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -96,9 +89,33 @@ export default function Users() {
     },
   });
 
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      // Delete user role first
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+      if (roleError) throw roleError;
+
+      // Delete profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', userId);
+      if (profileError) throw profileError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
+      toast.success('User deleted successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to delete user: ' + error.message);
+    },
+  });
+
   const addAdminMutation = useMutation({
     mutationFn: async () => {
-      // Sign up the new admin user
       const { data, error } = await supabase.auth.signUp({
         email: newAdminEmail,
         password: newAdminPassword,
@@ -109,9 +126,7 @@ export default function Users() {
 
       if (error) throw error;
 
-      // The trigger will create them as attendant, so we need to upgrade to owner
       if (data.user) {
-        // Wait a moment for the trigger to complete
         await new Promise((resolve) => setTimeout(resolve, 1500));
         
         const { error: roleError } = await supabase
@@ -291,40 +306,67 @@ export default function Users() {
                       {user.role === 'owner' ? 'Admin' : 'Attendant'}
                     </Badge>
                     {user.user_id !== currentUser?.id && (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <ArrowUpDown className="mr-1 h-3 w-3" />
-                            Change Role
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Change User Role</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to change {user.full_name}'s role to{' '}
-                              <strong>
-                                {user.role === 'owner' ? 'Attendant' : 'Admin'}
-                              </strong>
-                              ?
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() =>
-                                changeRoleMutation.mutate({
-                                  userId: user.user_id,
-                                  newRole:
-                                    user.role === 'owner' ? 'attendant' : 'owner',
-                                })
-                              }
-                            >
-                              Confirm
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <ArrowUpDown className="mr-1 h-3 w-3" />
+                              Change Role
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Change User Role</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to change {user.full_name}'s role to{' '}
+                                <strong>
+                                  {user.role === 'owner' ? 'Attendant' : 'Admin'}
+                                </strong>
+                                ?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() =>
+                                  changeRoleMutation.mutate({
+                                    userId: user.user_id,
+                                    newRole:
+                                      user.role === 'owner' ? 'attendant' : 'owner',
+                                  })
+                                }
+                              >
+                                Confirm
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete User</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete {user.full_name}? This will remove their profile and role. This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={() => deleteUserMutation.mutate(user.user_id)}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </>
                     )}
                   </div>
                 </div>
