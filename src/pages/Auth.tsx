@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Package, AlertCircle, Loader2 } from 'lucide-react';
 import { z } from 'zod';
+import ForgotPasswordFlow from '@/components/auth/ForgotPasswordFlow';
 
 const loginSchema = z.object({
   email: z.string().trim().email({ message: "Invalid email address" }),
