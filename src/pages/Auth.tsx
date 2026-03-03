@@ -109,27 +109,6 @@ export default function Auth() {
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) {
-        setError(error.message);
-      } else {
-        setForgotSuccess(true);
-      }
-    } catch {
-      setError('An unexpected error occurred.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -155,74 +134,13 @@ export default function Auth() {
           <CardTitle>{showForgotPassword ? 'Reset Password' : 'Welcome'}</CardTitle>
           <CardDescription>
             {showForgotPassword
-              ? 'Enter your email to receive a reset link'
+              ? 'Reset your password using a verification code'
               : 'Sign in to manage your inventory'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {showForgotPassword ? (
-            forgotSuccess ? (
-              <div className="space-y-4 text-center">
-                <p className="text-sm text-muted-foreground">
-                  If an account exists with that email, you'll receive a password reset link shortly.
-                </p>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    setShowForgotPassword(false);
-                    setForgotSuccess(false);
-                    setForgotEmail('');
-                  }}
-                >
-                  Back to Sign In
-                </Button>
-              </div>
-            ) : (
-              <form onSubmit={handleForgotPassword} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="forgot-email">Email</Label>
-                  <Input
-                    id="forgot-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    required
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                {error && (
-                  <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                    {error}
-                  </div>
-                )}
-
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    'Send Reset Link'
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full"
-                  onClick={() => {
-                    setShowForgotPassword(false);
-                    setError(null);
-                  }}
-                >
-                  Back to Sign In
-                </Button>
-              </form>
-            )
+            <ForgotPasswordFlow onBack={() => { setShowForgotPassword(false); setError(null); }} />
           ) : (
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
