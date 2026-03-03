@@ -94,7 +94,7 @@ export default function ForgotPasswordFlow({ onBack }: ForgotPasswordFlowProps) 
   if (step === 'success') {
     return (
       <div className="flex flex-col items-center gap-3 py-4">
-        <CheckCircle className="h-12 w-12 text-green-500" />
+        <CheckCircle className="h-12 w-12 text-primary" />
         <p className="text-center font-medium">Password updated successfully!</p>
         <Button variant="outline" className="w-full" onClick={onBack}>
           Back to Sign In
