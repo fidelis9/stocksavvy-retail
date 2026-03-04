@@ -115,52 +115,18 @@ export function useCreateSale() {
     mutationFn: async (items: SaleItem[]) => {
       if (!user) throw new Error('User not authenticated');
       
-      const totalAmount = items.reduce((sum, item) => sum + item.total_price, 0);
+      const { data, error } = await supabase.rpc('process_sale', {
+        p_user_id: user.id,
+        p_items: items.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          total_price: item.total_price,
+        })),
+      });
       
-      // Create sale
-      const { data: sale, error: saleError } = await supabase
-        .from('sales')
-        .insert({
-          user_id: user.id,
-          total_amount: totalAmount,
-        })
-        .select()
-        .single();
-      
-      if (saleError) throw saleError;
-      
-      // Create sale items
-      const saleItems = items.map(item => ({
-        sale_id: sale.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        total_price: item.total_price,
-      }));
-      
-      const { error: itemsError } = await supabase
-        .from('sale_items')
-        .insert(saleItems);
-      
-      if (itemsError) throw itemsError;
-      
-      // Update stock quantities
-      for (const item of items) {
-        const { data: product } = await supabase
-          .from('products')
-          .select('stock_quantity')
-          .eq('id', item.product_id)
-          .single();
-        
-        if (product) {
-          await supabase
-            .from('products')
-            .update({ stock_quantity: product.stock_quantity - item.quantity })
-            .eq('id', item.product_id);
-        }
-      }
-      
-      return sale;
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] });
