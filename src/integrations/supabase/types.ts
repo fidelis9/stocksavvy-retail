@@ -221,6 +221,10 @@ export type Database = {
         Returns: boolean
       }
       is_owner: { Args: never; Returns: boolean }
+      process_sale: {
+        Args: { p_items: Json; p_user_id: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "owner" | "attendant"
