@@ -320,6 +320,8 @@ export default function Products() {
                 onSubmit={handleCreate}
                 onCancel={() => setIsDialogOpen(false)}
                 isLoading={createProduct.isPending}
+                existingCategories={existingCategories}
+                allProducts={products}
               />
             </DialogContent>
           </Dialog>
