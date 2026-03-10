@@ -96,8 +96,8 @@ function ProductForm({
     }
     // Auto-generate SKU if empty
     const finalData = { ...formData };
-    if (!finalData.sku && finalData.category) {
-      finalData.sku = generateSKU(finalData.category, allProducts);
+    if (!finalData.sku) {
+      finalData.sku = generateSKU(allProducts);
     }
     onSubmit(finalData);
   };
