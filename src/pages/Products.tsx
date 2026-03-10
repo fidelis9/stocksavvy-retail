@@ -249,6 +249,12 @@ export default function Products() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
 
+  const existingCategories = useMemo(() => {
+    const cats = new Set<string>();
+    products.forEach((p) => { if (p.category) cats.add(p.category); });
+    return Array.from(cats).sort();
+  }, [products]);
+
   const filteredProducts = products.filter(
     (p) =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
