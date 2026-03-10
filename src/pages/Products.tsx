@@ -33,17 +33,12 @@ import {
 import { Plus, Search, Edit, Trash2, Package, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-function generateSKU(category: string, existingProducts: Product[]): string {
-  const prefix = category
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, '')
-    .slice(0, 4) || 'PROD';
-  
-  // Find highest number for this prefix
-  const regex = new RegExp(`^${prefix}-(\\d+)$`);
+function generateSKU(existingProducts: Product[]): string {
+  const prefix = 'SKU';
+  const regex = /^SKU-(\d+)$/;
   let maxNum = 0;
   existingProducts.forEach((p) => {
-    const match = p.sku?.match(regex);
+    const match = p.sku?.toUpperCase().match(regex);
     if (match) {
       maxNum = Math.max(maxNum, parseInt(match[1]));
     }
@@ -70,7 +65,7 @@ function ProductForm({
   const [isNewCategory, setIsNewCategory] = useState(false);
   const [formData, setFormData] = useState<ProductInsert>({
     name: product?.name || '',
-    sku: product?.sku || '',
+    sku: product?.sku || generateSKU(allProducts),
     description: product?.description || '',
     buying_price: product?.buying_price || 0,
     selling_price: product?.selling_price || 0,
@@ -82,17 +77,15 @@ function ProductForm({
   const handleCategoryChange = (value: string) => {
     if (value === '__new__') {
       setIsNewCategory(true);
-      setFormData({ ...formData, category: '', sku: '' });
+      setFormData({ ...formData, category: '' });
     } else {
       setIsNewCategory(false);
-      const sku = product ? formData.sku : generateSKU(value, allProducts);
-      setFormData({ ...formData, category: value, sku });
+      setFormData({ ...formData, category: value });
     }
   };
 
   const handleNewCategoryInput = (value: string) => {
-    const sku = product ? formData.sku : generateSKU(value, allProducts);
-    setFormData({ ...formData, category: value, sku });
+    setFormData({ ...formData, category: value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -103,8 +96,8 @@ function ProductForm({
     }
     // Auto-generate SKU if empty
     const finalData = { ...formData };
-    if (!finalData.sku && finalData.category) {
-      finalData.sku = generateSKU(finalData.category, allProducts);
+    if (!finalData.sku) {
+      finalData.sku = generateSKU(allProducts);
     }
     onSubmit(finalData);
   };
