@@ -441,6 +441,8 @@ export default function Products() {
               onSubmit={handleUpdate}
               onCancel={() => setEditingProduct(null)}
               isLoading={updateProduct.isPending}
+              existingCategories={existingCategories}
+              allProducts={products}
             />
           )}
         </DialogContent>
