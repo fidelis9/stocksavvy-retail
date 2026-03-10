@@ -164,7 +164,7 @@ export default function Finance() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-4 p-6">
             <div className="rounded-lg bg-primary/10 p-3">

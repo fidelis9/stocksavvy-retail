@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, type Product, type ProductInsert } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -26,17 +33,41 @@ import {
 import { Plus, Search, Edit, Trash2, Package, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+function generateSKU(category: string, existingProducts: Product[]): string {
+  const prefix = category
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 4) || 'PROD';
+  
+  // Find highest number for this prefix
+  const regex = new RegExp(`^${prefix}-(\\d+)$`);
+  let maxNum = 0;
+  existingProducts.forEach((p) => {
+    const match = p.sku?.match(regex);
+    if (match) {
+      maxNum = Math.max(maxNum, parseInt(match[1]));
+    }
+  });
+
+  return `${prefix}-${String(maxNum + 1).padStart(3, '0')}`;
+}
+
 function ProductForm({ 
   product, 
   onSubmit, 
   onCancel,
-  isLoading 
+  isLoading,
+  existingCategories,
+  allProducts,
 }: { 
   product?: Product; 
   onSubmit: (data: ProductInsert) => void;
   onCancel: () => void;
   isLoading: boolean;
+  existingCategories: string[];
+  allProducts: Product[];
 }) {
+  const [isNewCategory, setIsNewCategory] = useState(false);
   const [formData, setFormData] = useState<ProductInsert>({
     name: product?.name || '',
     sku: product?.sku || '',
@@ -44,9 +75,25 @@ function ProductForm({
     buying_price: product?.buying_price || 0,
     selling_price: product?.selling_price || 0,
     stock_quantity: product?.stock_quantity || 0,
-    minimum_stock_level: product?.minimum_stock_level || 5,
+    minimum_stock_level: product?.minimum_stock_level || 1,
     category: product?.category || '',
   });
+
+  const handleCategoryChange = (value: string) => {
+    if (value === '__new__') {
+      setIsNewCategory(true);
+      setFormData({ ...formData, category: '', sku: '' });
+    } else {
+      setIsNewCategory(false);
+      const sku = product ? formData.sku : generateSKU(value, allProducts);
+      setFormData({ ...formData, category: value, sku });
+    }
+  };
+
+  const handleNewCategoryInput = (value: string) => {
+    const sku = product ? formData.sku : generateSKU(value, allProducts);
+    setFormData({ ...formData, category: value, sku });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +101,12 @@ function ProductForm({
       toast.error('Product name is required');
       return;
     }
-    onSubmit(formData);
+    // Auto-generate SKU if empty
+    const finalData = { ...formData };
+    if (!finalData.sku && finalData.category) {
+      finalData.sku = generateSKU(finalData.category, allProducts);
+    }
+    onSubmit(finalData);
   };
 
   return (
@@ -71,14 +123,57 @@ function ProductForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="sku">SKU</Label>
-          <Input
-            id="sku"
-            value={formData.sku}
-            onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-            placeholder="e.g., PROD-001"
-          />
+          <Label htmlFor="category">Category</Label>
+          {!isNewCategory ? (
+            <Select
+              value={formData.category || undefined}
+              onValueChange={handleCategoryChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {existingCategories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+                <SelectItem value="__new__">+ Add New Category</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="flex gap-2">
+              <Input
+                value={formData.category}
+                onChange={(e) => handleNewCategoryInput(e.target.value)}
+                placeholder="Enter new category"
+                autoFocus
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsNewCategory(false);
+                  setFormData({ ...formData, category: '', sku: '' });
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="sku">SKU (auto-generated from category)</Label>
+        <Input
+          id="sku"
+          value={formData.sku}
+          readOnly
+          className="bg-muted"
+          placeholder="Select a category to auto-generate"
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -129,16 +224,6 @@ function ProductForm({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="category">Category</Label>
-        <Input
-          id="category"
-          value={formData.category}
-          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-          placeholder="e.g., Electronics"
-        />
-      </div>
-
       <div className="flex justify-end gap-3 pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
@@ -163,6 +248,12 @@ export default function Products() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
+
+  const existingCategories = useMemo(() => {
+    const cats = new Set<string>();
+    products.forEach((p) => { if (p.category) cats.add(p.category); });
+    return Array.from(cats).sort();
+  }, [products]);
 
   const filteredProducts = products.filter(
     (p) =>
@@ -229,6 +320,8 @@ export default function Products() {
                 onSubmit={handleCreate}
                 onCancel={() => setIsDialogOpen(false)}
                 isLoading={createProduct.isPending}
+                existingCategories={existingCategories}
+                allProducts={products}
               />
             </DialogContent>
           </Dialog>
@@ -348,6 +441,8 @@ export default function Products() {
               onSubmit={handleUpdate}
               onCancel={() => setEditingProduct(null)}
               isLoading={updateProduct.isPending}
+              existingCategories={existingCategories}
+              allProducts={products}
             />
           )}
         </DialogContent>
