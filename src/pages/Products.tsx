@@ -33,17 +33,12 @@ import {
 import { Plus, Search, Edit, Trash2, Package, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-function generateSKU(category: string, existingProducts: Product[]): string {
-  const prefix = category
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, '')
-    .slice(0, 4) || 'PROD';
-  
-  // Find highest number for this prefix
-  const regex = new RegExp(`^${prefix}-(\\d+)$`);
+function generateSKU(existingProducts: Product[]): string {
+  const prefix = 'SKU';
+  const regex = /^SKU-(\d+)$/;
   let maxNum = 0;
   existingProducts.forEach((p) => {
-    const match = p.sku?.match(regex);
+    const match = p.sku?.toUpperCase().match(regex);
     if (match) {
       maxNum = Math.max(maxNum, parseInt(match[1]));
     }
