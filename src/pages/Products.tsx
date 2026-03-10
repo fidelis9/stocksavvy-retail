@@ -65,7 +65,7 @@ function ProductForm({
   const [isNewCategory, setIsNewCategory] = useState(false);
   const [formData, setFormData] = useState<ProductInsert>({
     name: product?.name || '',
-    sku: product?.sku || '',
+    sku: product?.sku || generateSKU(allProducts),
     description: product?.description || '',
     buying_price: product?.buying_price || 0,
     selling_price: product?.selling_price || 0,
@@ -77,17 +77,15 @@ function ProductForm({
   const handleCategoryChange = (value: string) => {
     if (value === '__new__') {
       setIsNewCategory(true);
-      setFormData({ ...formData, category: '', sku: '' });
+      setFormData({ ...formData, category: '' });
     } else {
       setIsNewCategory(false);
-      const sku = product ? formData.sku : generateSKU(value, allProducts);
-      setFormData({ ...formData, category: value, sku });
+      setFormData({ ...formData, category: value });
     }
   };
 
   const handleNewCategoryInput = (value: string) => {
-    const sku = product ? formData.sku : generateSKU(value, allProducts);
-    setFormData({ ...formData, category: value, sku });
+    setFormData({ ...formData, category: value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
