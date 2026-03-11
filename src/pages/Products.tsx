@@ -43,7 +43,7 @@ function generateSKU(existingProducts: Product[]): string {
     }
   });
 
-  return `SK${String(maxNum + 1).padStart(3, '0')}`;
+  return `SK${String(maxNum + 1).padStart(4, '0')}`;
 }
 
 function ProductForm({ 
