@@ -1,11 +1,18 @@
 import { useState, useMemo } from 'react';
-import { useProducts, type Product } from '@/hooks/useProducts';
+import { useProducts, type Product, type ProductType } from '@/hooks/useProducts';
 import { useCreateSale, type SaleItem } from '@/hooks/useSales';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { 
   ShoppingCart, 
   Search, 
@@ -26,24 +33,40 @@ interface CartItem extends SaleItem {
 
 const ITEMS_PER_PAGE = 10;
 
+const TYPE_LABELS: Record<ProductType, string> = {
+  inventory: 'Inventory',
+  service: 'Service',
+  print: 'Print',
+};
+
 export default function Sales() {
   const { data: products = [], isLoading: loadingProducts } = useProducts();
   const createSale = useCreateSale();
   
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState<string>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   const availableProducts = products.filter(p => p.stock_quantity > 0);
+
+  const existingCategories = useMemo(() => {
+    const cats = new Set<string>();
+    availableProducts.forEach((p) => { if (p.category) cats.add(p.category); });
+    return Array.from(cats).sort();
+  }, [availableProducts]);
   
   const filteredProducts = useMemo(() => {
-    const filtered = availableProducts.filter(
-      (p) =>
+    return availableProducts.filter((p) => {
+      const matchesSearch =
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.sku?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    return filtered;
-  }, [availableProducts, searchQuery]);
+        p.sku?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = filterType === 'all' || p.product_type === filterType;
+      const matchesCategory = filterCategory === 'all' || p.category === filterCategory;
+      return matchesSearch && matchesType && matchesCategory;
+    });
+  }, [availableProducts, searchQuery, filterType, filterCategory]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
   const paginatedProducts = filteredProducts.slice(
@@ -51,7 +74,6 @@ export default function Sales() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Reset to page 1 when search changes
   const handleSearch = (value: string) => {
     setSearchQuery(value);
     setCurrentPage(1);
@@ -136,15 +158,39 @@ export default function Sales() {
           <p className="text-muted-foreground">Select products to add to cart</p>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10"
-          />
+        {/* Search & Filters */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(1); }}>
+            <SelectTrigger className="w-[130px]">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="inventory">Inventory</SelectItem>
+              <SelectItem value="service">Service</SelectItem>
+              <SelectItem value="print">Print</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterCategory} onValueChange={(v) => { setFilterCategory(v); setCurrentPage(1); }}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {existingCategories.map((cat) => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Products Table */}
@@ -158,7 +204,7 @@ export default function Sales() {
               <Package className="h-12 w-12 text-muted-foreground/50" />
               <p className="mt-4 text-lg font-medium">No products available</p>
               <p className="text-muted-foreground">
-                {searchQuery ? 'Try a different search' : 'All products are out of stock'}
+                {searchQuery || filterType !== 'all' || filterCategory !== 'all' ? 'Try different filters' : 'All products are out of stock'}
               </p>
             </CardContent>
           </Card>
@@ -168,6 +214,7 @@ export default function Sales() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Product</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">Stock</TableHead>
                   <TableHead className="text-right">Action</TableHead>
@@ -191,6 +238,11 @@ export default function Sales() {
                             <span className="text-xs text-muted-foreground">per {product.unit}</span>
                           )}
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs">
+                          {TYPE_LABELS[product.product_type]}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-right font-semibold text-primary">
                         KSH {Number(product.selling_price).toFixed(2)}

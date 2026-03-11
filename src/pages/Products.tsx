@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, type Product, type ProductInsert } from '@/hooks/useProducts';
+import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, getProductTypeFromCategory, type Product, type ProductInsert, type ProductType } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,6 +46,18 @@ function generateSKU(existingProducts: Product[]): string {
   return `SK${String(maxNum + 1).padStart(4, '0')}`;
 }
 
+const TYPE_LABELS: Record<ProductType, string> = {
+  inventory: 'Inventory',
+  service: 'Service',
+  print: 'Print',
+};
+
+const TYPE_COLORS: Record<ProductType, string> = {
+  inventory: 'default',
+  service: 'secondary',
+  print: 'outline',
+};
+
 function ProductForm({ 
   product, 
   onSubmit, 
@@ -72,20 +84,23 @@ function ProductForm({
     minimum_stock_level: product?.minimum_stock_level || 1,
     category: product?.category || '',
     unit: product?.unit || '',
+    product_type: product?.product_type || 'inventory',
   });
 
   const handleCategoryChange = (value: string) => {
     if (value === '__new__') {
       setIsNewCategory(true);
-      setFormData({ ...formData, category: '' });
+      setFormData({ ...formData, category: '', product_type: 'inventory' });
     } else {
       setIsNewCategory(false);
-      setFormData({ ...formData, category: value });
+      const autoType = getProductTypeFromCategory(value);
+      setFormData({ ...formData, category: value, product_type: autoType });
     }
   };
 
   const handleNewCategoryInput = (value: string) => {
-    setFormData({ ...formData, category: value });
+    const autoType = getProductTypeFromCategory(value);
+    setFormData({ ...formData, category: value, product_type: autoType });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -94,7 +109,6 @@ function ProductForm({
       toast.error('Product name is required');
       return;
     }
-    // Auto-generate SKU if empty
     const finalData = { ...formData };
     if (!finalData.sku) {
       finalData.sku = generateSKU(allProducts);
@@ -158,15 +172,33 @@ function ProductForm({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="sku">SKU (auto-generated from category)</Label>
-        <Input
-          id="sku"
-          value={formData.sku}
-          readOnly
-          className="bg-muted"
-          placeholder="Select a category to auto-generate"
-        />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="sku">SKU (auto-generated)</Label>
+          <Input
+            id="sku"
+            value={formData.sku}
+            readOnly
+            className="bg-muted"
+            placeholder="Select a category to auto-generate"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="product_type">Product Type</Label>
+          <Select
+            value={formData.product_type}
+            onValueChange={(value: ProductType) => setFormData({ ...formData, product_type: value })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="inventory">Inventory</SelectItem>
+              <SelectItem value="service">Service</SelectItem>
+              <SelectItem value="print">Print</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -248,6 +280,8 @@ export default function Products() {
   const deleteProduct = useDeleteProduct();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState<string>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
@@ -258,12 +292,17 @@ export default function Products() {
     return Array.from(cats).sort();
   }, [products]);
 
-  const filteredProducts = products.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const matchesSearch =
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.category?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = filterType === 'all' || p.product_type === filterType;
+      const matchesCategory = filterCategory === 'all' || p.category === filterCategory;
+      return matchesSearch && matchesType && matchesCategory;
+    });
+  }, [products, searchQuery, filterType, filterCategory]);
 
   const handleCreate = async (data: ProductInsert) => {
     try {
@@ -331,15 +370,39 @@ export default function Products() {
         )}
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Search products..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
+      {/* Search & Filters */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="inventory">Inventory</SelectItem>
+            <SelectItem value="service">Service</SelectItem>
+            <SelectItem value="print">Print</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterCategory} onValueChange={setFilterCategory}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="All Categories" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {existingCategories.map((cat) => (
+              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Products Grid */}
@@ -353,7 +416,7 @@ export default function Products() {
             <Package className="h-12 w-12 text-muted-foreground/50" />
             <p className="mt-4 text-lg font-medium">No products found</p>
             <p className="text-muted-foreground">
-              {searchQuery ? 'Try a different search term' : 'Add your first product to get started'}
+              {searchQuery || filterType !== 'all' || filterCategory !== 'all' ? 'Try different filters' : 'Add your first product to get started'}
             </p>
           </CardContent>
         </Card>
@@ -419,11 +482,21 @@ export default function Products() {
                         </span>
                       </div>
                     )}
-                    {product.category && (
-                      <Badge variant="secondary" className="mt-2">
-                        {product.category}
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <Badge variant={TYPE_COLORS[product.product_type] as any}>
+                        {TYPE_LABELS[product.product_type]}
                       </Badge>
-                    )}
+                      {product.category && (
+                        <Badge variant="secondary">
+                          {product.category}
+                        </Badge>
+                      )}
+                      {product.unit && (
+                        <Badge variant="outline" className="text-xs">
+                          per {product.unit}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
