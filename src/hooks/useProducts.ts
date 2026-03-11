@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+export type ProductType = 'inventory' | 'service' | 'print';
+
 export interface Product {
   id: string;
   name: string;
@@ -13,6 +15,7 @@ export interface Product {
   minimum_stock_level: number;
   category: string | null;
   unit: string | null;
+  product_type: ProductType;
   created_at: string;
   updated_at: string;
 }
@@ -27,6 +30,15 @@ export interface ProductInsert {
   minimum_stock_level: number;
   category?: string;
   unit?: string;
+  product_type?: ProductType;
+}
+
+export function getProductTypeFromCategory(category?: string): ProductType {
+  if (!category) return 'inventory';
+  const lower = category.toLowerCase();
+  if (lower.includes('printing') || lower.includes('finishing')) return 'print';
+  if (lower.includes('cyber') || lower.includes('service')) return 'service';
+  return 'inventory';
 }
 
 export function useProducts() {
