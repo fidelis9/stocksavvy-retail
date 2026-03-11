@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { useCreateSale, type SaleItem } from '@/hooks/useSales';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
   ShoppingCart, 
   Search, 
@@ -13,7 +14,9 @@ import {
   Trash2, 
   CheckCircle, 
   Loader2,
-  Package
+  Package,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -21,20 +24,38 @@ interface CartItem extends SaleItem {
   product: Product;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export default function Sales() {
   const { data: products = [], isLoading: loadingProducts } = useProducts();
   const createSale = useCreateSale();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const availableProducts = products.filter(p => p.stock_quantity > 0);
   
-  const filteredProducts = availableProducts.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.sku?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredProducts = useMemo(() => {
+    const filtered = availableProducts.filter(
+      (p) =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.sku?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    return filtered;
+  }, [availableProducts, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
+
+  // Reset to page 1 when search changes
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
 
   const cartTotal = cart.reduce((sum, item) => sum + item.total_price, 0);
 
@@ -121,12 +142,12 @@ export default function Sales() {
           <Input
             placeholder="Search products..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             className="pl-10"
           />
         </div>
 
-        {/* Products Grid */}
+        {/* Products Table */}
         {loadingProducts ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -142,42 +163,88 @@ export default function Sales() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredProducts.map((product) => {
-              const cartItem = cart.find(item => item.product_id === product.id);
-              const inCart = !!cartItem;
-              
-              return (
-                <Card
-                  key={product.id}
-                  className={`cursor-pointer transition-all hover:shadow-md ${inCart ? 'ring-2 ring-primary' : ''}`}
-                  onClick={() => addToCart(product)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="font-medium">{product.name}</p>
-                        <p className="text-lg font-bold text-primary">
-                          KSH {Number(product.selling_price).toFixed(2)}
-                        </p>
-                      </div>
-                      <Badge variant="secondary">
-                        {product.stock_quantity} in stock
-                      </Badge>
-                    </div>
-                    {inCart && (
-                      <div className="mt-2 flex items-center justify-between rounded bg-primary/10 px-2 py-1">
-                        <span className="text-sm font-medium text-primary">
-                          {cartItem.quantity} {product.unit ? `${product.unit}${cartItem.quantity !== 1 ? 's' : ''}` : 'in cart'}
-                        </span>
-                        <Plus className="h-4 w-4 text-primary" />
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead className="text-right">Price</TableHead>
+                  <TableHead className="text-right">Stock</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedProducts.map((product) => {
+                  const cartItem = cart.find(item => item.product_id === product.id);
+                  const inCart = !!cartItem;
+
+                  return (
+                    <TableRow
+                      key={product.id}
+                      className={`cursor-pointer ${inCart ? 'bg-primary/5' : ''}`}
+                      onClick={() => addToCart(product)}
+                    >
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          {product.unit && (
+                            <span className="text-xs text-muted-foreground">per {product.unit}</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right font-semibold text-primary">
+                        KSH {Number(product.selling_price).toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Badge variant="secondary">{product.stock_quantity}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {inCart ? (
+                          <Badge variant="default">
+                            {cartItem.quantity} {product.unit ? `${product.unit}${cartItem.quantity !== 1 ? 's' : ''}` : 'in cart'}
+                          </Badge>
+                        ) : (
+                          <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); addToCart(product); }}>
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t px-4 py-3">
+                <p className="text-sm text-muted-foreground">
+                  {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
         )}
       </div>
 
@@ -229,7 +296,12 @@ export default function Sales() {
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
-                          <span className="w-8 text-center font-medium">{item.quantity}</span>
+                          <div className="text-center">
+                            <span className="w-8 font-medium">{item.quantity}</span>
+                            {item.product.unit && (
+                              <span className="ml-1 text-xs text-muted-foreground">{item.product.unit}{item.quantity !== 1 ? 's' : ''}</span>
+                            )}
+                          </div>
                           <Button
                             variant="outline"
                             size="icon"
