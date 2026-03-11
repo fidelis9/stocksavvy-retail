@@ -204,7 +204,7 @@ export default function Sales() {
                         <div className="flex-1">
                           <p className="font-medium">{item.product.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            KSH {item.unit_price.toFixed(2)} each
+                            KSH {item.unit_price.toFixed(2)} {item.product.unit ? `per ${item.product.unit}` : 'each'}
                           </p>
                         </div>
                         <Button
