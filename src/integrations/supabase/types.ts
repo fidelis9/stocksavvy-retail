@@ -23,6 +23,7 @@ export type Database = {
           id: string
           minimum_stock_level: number
           name: string
+          product_type: string
           selling_price: number
           sku: string | null
           stock_quantity: number
@@ -37,6 +38,7 @@ export type Database = {
           id?: string
           minimum_stock_level?: number
           name: string
+          product_type?: string
           selling_price?: number
           sku?: string | null
           stock_quantity?: number
@@ -51,6 +53,7 @@ export type Database = {
           id?: string
           minimum_stock_level?: number
           name?: string
+          product_type?: string
           selling_price?: number
           sku?: string | null
           stock_quantity?: number
