@@ -34,17 +34,16 @@ import { Plus, Search, Edit, Trash2, Package, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 function generateSKU(existingProducts: Product[]): string {
-  const prefix = 'SKU';
-  const regex = /^SKU-(\d+)$/;
+  const regex = /^SK(\d+)$/i;
   let maxNum = 0;
   existingProducts.forEach((p) => {
-    const match = p.sku?.toUpperCase().match(regex);
+    const match = p.sku?.match(regex);
     if (match) {
       maxNum = Math.max(maxNum, parseInt(match[1]));
     }
   });
 
-  return `${prefix}-${String(maxNum + 1).padStart(3, '0')}`;
+  return `SK${String(maxNum + 1).padStart(3, '0')}`;
 }
 
 function ProductForm({ 
