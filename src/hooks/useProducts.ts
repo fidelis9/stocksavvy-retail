@@ -12,6 +12,7 @@ export interface Product {
   stock_quantity: number;
   minimum_stock_level: number;
   category: string | null;
+  unit: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -25,6 +26,7 @@ export interface ProductInsert {
   stock_quantity: number;
   minimum_stock_level: number;
   category?: string;
+  unit?: string;
 }
 
 export function useProducts() {

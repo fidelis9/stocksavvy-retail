@@ -71,6 +71,7 @@ function ProductForm({
     stock_quantity: product?.stock_quantity || 0,
     minimum_stock_level: product?.minimum_stock_level || 1,
     category: product?.category || '',
+    unit: product?.unit || '',
   });
 
   const handleCategoryChange = (value: string) => {
@@ -191,6 +192,16 @@ function ProductForm({
             onChange={(e) => setFormData({ ...formData, selling_price: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
           />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="unit">Unit (optional, e.g. page, copy, sheet)</Label>
+        <Input
+          id="unit"
+          value={formData.unit || ''}
+          onChange={(e) => setFormData({ ...formData, unit: e.target.value || undefined })}
+          placeholder="Leave empty for normal products"
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
