@@ -71,6 +71,7 @@ function ProductForm({
     stock_quantity: product?.stock_quantity || 0,
     minimum_stock_level: product?.minimum_stock_level || 1,
     category: product?.category || '',
+    unit: product?.unit || '',
   });
 
   const handleCategoryChange = (value: string) => {
