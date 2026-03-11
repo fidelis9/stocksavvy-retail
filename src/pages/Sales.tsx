@@ -168,7 +168,7 @@ export default function Sales() {
                     {inCart && (
                       <div className="mt-2 flex items-center justify-between rounded bg-primary/10 px-2 py-1">
                         <span className="text-sm font-medium text-primary">
-                          {cartItem.quantity} in cart
+                          {cartItem.quantity} {product.unit ? `${product.unit}${cartItem.quantity !== 1 ? 's' : ''}` : 'in cart'}
                         </span>
                         <Plus className="h-4 w-4 text-primary" />
                       </div>

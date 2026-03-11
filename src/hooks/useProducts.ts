@@ -26,6 +26,7 @@ export interface ProductInsert {
   stock_quantity: number;
   minimum_stock_level: number;
   category?: string;
+  unit?: string;
 }
 
 export function useProducts() {
