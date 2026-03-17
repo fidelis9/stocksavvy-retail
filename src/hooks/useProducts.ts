@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export type ProductType = 'inventory' | 'service' | 'print';
+export type ProductType = 'product' | 'printing' | 'service';
 
 export interface Product {
   id: string;
@@ -33,12 +33,16 @@ export interface ProductInsert {
   product_type?: ProductType;
 }
 
+export function isStockTracked(type: ProductType): boolean {
+  return type === 'product';
+}
+
 export function getProductTypeFromCategory(category?: string): ProductType {
-  if (!category) return 'inventory';
+  if (!category) return 'product';
   const lower = category.toLowerCase();
-  if (lower.includes('printing') || lower.includes('finishing')) return 'print';
+  if (lower.includes('printing') || lower.includes('finishing')) return 'printing';
   if (lower.includes('cyber') || lower.includes('service')) return 'service';
-  return 'inventory';
+  return 'product';
 }
 
 export function useProducts() {
@@ -86,8 +90,8 @@ export function useLowStockProducts() {
       
       if (error) throw error;
       
-      // Filter products where stock is at or below minimum level
-      return (data as Product[]).filter(p => p.stock_quantity <= p.minimum_stock_level);
+      // Only inventory products track stock
+      return (data as Product[]).filter(p => p.product_type === 'product' && p.stock_quantity <= p.minimum_stock_level);
     },
   });
 }
