@@ -209,7 +209,7 @@ function ProductForm({
             type="number"
             step="0.01"
             min="0"
-            value={formData.buying_price === 0 ? '' : formData.buying_price}
+            value={formData.buying_price}
             onChange={(e) => setFormData({ ...formData, buying_price: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
           />
         </div>
