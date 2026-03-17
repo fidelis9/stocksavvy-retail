@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useProducts, type Product, type ProductType } from '@/hooks/useProducts';
+import { useProducts, isStockTracked, type Product, type ProductType } from '@/hooks/useProducts';
 import { useCreateSale, type SaleItem } from '@/hooks/useSales';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,9 +34,9 @@ interface CartItem extends SaleItem {
 const ITEMS_PER_PAGE = 10;
 
 const TYPE_LABELS: Record<ProductType, string> = {
-  inventory: 'Inventory',
+  product: 'Product',
+  printing: 'Printing',
   service: 'Service',
-  print: 'Print',
 };
 
 export default function Sales() {
@@ -49,7 +49,10 @@ export default function Sales() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const availableProducts = products.filter(p => p.stock_quantity > 0);
+  // Show all products; for 'product' type, only those with stock > 0
+  const availableProducts = products.filter(p => 
+    !isStockTracked(p.product_type) || p.stock_quantity > 0
+  );
 
   const existingCategories = useMemo(() => {
     const cats = new Set<string>();
@@ -83,9 +86,10 @@ export default function Sales() {
 
   const addToCart = (product: Product) => {
     const existingItem = cart.find(item => item.product_id === product.id);
+    const tracked = isStockTracked(product.product_type);
     
     if (existingItem) {
-      if (existingItem.quantity >= product.stock_quantity) {
+      if (tracked && existingItem.quantity >= product.stock_quantity) {
         toast.error('Not enough stock available');
         return;
       }
@@ -109,7 +113,8 @@ export default function Sales() {
 
     setCart(cart.map(item => {
       if (item.product_id === productId) {
-        if (quantity > item.product.stock_quantity) {
+        const tracked = isStockTracked(item.product.product_type);
+        if (tracked && quantity > item.product.stock_quantity) {
           toast.error('Not enough stock available');
           return item;
         }
@@ -155,7 +160,7 @@ export default function Sales() {
       <div className="flex-1 space-y-4">
         <div>
           <h1 className="text-2xl font-bold">New Sale</h1>
-          <p className="text-muted-foreground">Select products to add to cart</p>
+          <p className="text-muted-foreground">Select items to add to cart</p>
         </div>
 
         {/* Search & Filters */}
@@ -163,7 +168,7 @@ export default function Sales() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search products..."
+              placeholder="Search items..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10"
@@ -175,9 +180,9 @@ export default function Sales() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="inventory">Inventory</SelectItem>
+              <SelectItem value="product">Product</SelectItem>
+              <SelectItem value="printing">Printing</SelectItem>
               <SelectItem value="service">Service</SelectItem>
-              <SelectItem value="print">Print</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filterCategory} onValueChange={(v) => { setFilterCategory(v); setCurrentPage(1); }}>
@@ -202,7 +207,7 @@ export default function Sales() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Package className="h-12 w-12 text-muted-foreground/50" />
-              <p className="mt-4 text-lg font-medium">No products available</p>
+              <p className="mt-4 text-lg font-medium">No items available</p>
               <p className="text-muted-foreground">
                 {searchQuery || filterType !== 'all' || filterCategory !== 'all' ? 'Try different filters' : 'All products are out of stock'}
               </p>
@@ -213,7 +218,7 @@ export default function Sales() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Product</TableHead>
+                  <TableHead>Item</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">Stock</TableHead>
@@ -224,6 +229,7 @@ export default function Sales() {
                 {paginatedProducts.map((product) => {
                   const cartItem = cart.find(item => item.product_id === product.id);
                   const inCart = !!cartItem;
+                  const tracked = isStockTracked(product.product_type);
 
                   return (
                     <TableRow
@@ -248,7 +254,11 @@ export default function Sales() {
                         KSH {Number(product.selling_price).toFixed(2)}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Badge variant="secondary">{product.stock_quantity}</Badge>
+                        {tracked ? (
+                          <Badge variant="secondary">{product.stock_quantity}</Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">∞</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         {inCart ? (
@@ -271,7 +281,7 @@ export default function Sales() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between border-t px-4 py-3">
                 <p className="text-sm text-muted-foreground">
-                  {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+                  {filteredProducts.length} item{filteredProducts.length !== 1 ? 's' : ''}
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
@@ -312,7 +322,7 @@ export default function Sales() {
           <CardContent className="space-y-4">
             {cart.length === 0 ? (
               <p className="py-8 text-center text-muted-foreground">
-                Cart is empty. Select products to add.
+                Cart is empty. Select items to add.
               </p>
             ) : (
               <>
