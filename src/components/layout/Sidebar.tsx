@@ -30,6 +30,7 @@ const ownerNavItems = [
 const attendantNavItems = [
   { path: '/', label: 'New Sale', icon: ShoppingCart },
   { path: '/products', label: 'Stock', icon: Package },
+  { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function Sidebar() {
