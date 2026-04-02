@@ -14,6 +14,7 @@ import StockAdjustments from "./pages/StockAdjustments";
 import Reports from "./pages/Reports";
 import Users from "./pages/Users";
 import Finance from "./pages/Finance";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -81,6 +82,14 @@ const App = () => (
               element={
                 <AppLayout>
                   <Users />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <AppLayout>
+                  <Settings />
                 </AppLayout>
               }
             />

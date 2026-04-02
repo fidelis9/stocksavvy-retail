@@ -9,7 +9,8 @@ import {
   LogOut, 
   TrendingDown,
   Wallet,
-  Menu
+  Menu,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -23,11 +24,13 @@ const ownerNavItems = [
   { path: '/reports', label: 'Reports', icon: FileText },
   { path: '/finance', label: 'Finance', icon: Wallet },
   { path: '/users', label: 'Users', icon: Users },
+  { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
 const attendantNavItems = [
   { path: '/', label: 'New Sale', icon: ShoppingCart },
   { path: '/products', label: 'Stock', icon: Package },
+  { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function Sidebar() {
