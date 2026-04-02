@@ -24,6 +24,7 @@ const ownerNavItems = [
   { path: '/reports', label: 'Reports', icon: FileText },
   { path: '/finance', label: 'Finance', icon: Wallet },
   { path: '/users', label: 'Users', icon: Users },
+  { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
 const attendantNavItems = [
