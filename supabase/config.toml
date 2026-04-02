@@ -1,1 +1,8 @@
 project_id = "ktdvzfhjjpijiyknfxhb"
+
+[auth.email]
+recovery_otp = true
+
+[auth.email.template.recovery]
+subject = "Your StockFlow Password Reset Code"
+content_path = "./supabase/templates/recovery.html"
