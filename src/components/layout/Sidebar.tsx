@@ -9,7 +9,8 @@ import {
   LogOut, 
   TrendingDown,
   Wallet,
-  Menu
+  Menu,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
