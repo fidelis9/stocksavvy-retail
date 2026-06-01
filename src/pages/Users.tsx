@@ -278,7 +278,7 @@ export default function Users() {
               {users.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between rounded-lg border p-4"
+                  className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex items-center gap-4">
                     <div
