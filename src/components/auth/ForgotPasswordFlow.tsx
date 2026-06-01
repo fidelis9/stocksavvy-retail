@@ -26,9 +26,11 @@ export default function ForgotPasswordFlow({ onBack }: ForgotPasswordFlowProps) 
     setError(null);
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabase.functions.invoke('send-password-reset-otp', {
+        body: { email },
+      });
       if (error) {
-        setError(error.message);
+        setError(error.message ?? 'Failed to send code.');
       } else {
         setStep('otp');
       }
@@ -46,23 +48,8 @@ export default function ForgotPasswordFlow({ onBack }: ForgotPasswordFlowProps) 
       setError('Please enter the 6-digit code.');
       return;
     }
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: 'recovery',
-      });
-      if (error) {
-        setError('Invalid or expired code. Please try again.');
-      } else {
-        setStep('new-password');
-      }
-    } catch {
-      setError('An unexpected error occurred.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Code is verified together with the new password in the next step.
+    setStep('new-password');
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -78,9 +65,15 @@ export default function ForgotPasswordFlow({ onBack }: ForgotPasswordFlowProps) 
     }
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
+      const { data, error } = await supabase.functions.invoke('verify-password-reset-otp', {
+        body: { email, code: otp, newPassword: password },
+      });
       if (error) {
-        setError(error.message);
+        // Try to surface the function's JSON error if available
+        const ctx = (error as { context?: { error?: string } }).context;
+        setError(ctx?.error ?? error.message ?? 'Failed to reset password.');
+      } else if (data?.error) {
+        setError(data.error);
       } else {
         setStep('success');
       }
