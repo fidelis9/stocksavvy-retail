@@ -57,7 +57,9 @@ Deno.serve(async (req) => {
       if (insertErr) throw insertErr;
 
       const resendKey = Deno.env.get('RESEND_API_KEY');
+      const lovableKey = Deno.env.get('LOVABLE_API_KEY');
       if (!resendKey) throw new Error('RESEND_API_KEY not configured');
+      if (!lovableKey) throw new Error('LOVABLE_API_KEY not configured');
 
       const html = `
         <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#fff;">
