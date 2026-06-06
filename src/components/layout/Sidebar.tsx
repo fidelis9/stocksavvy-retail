@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 const ownerNavItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/products', label: 'Products', icon: Package },
   { path: '/sales', label: 'Sales', icon: ShoppingCart },
   { path: '/stock-adjustments', label: 'Adjustments', icon: TrendingDown },
@@ -28,7 +28,7 @@ const ownerNavItems = [
 ];
 
 const attendantNavItems = [
-  { path: '/', label: 'New Sale', icon: ShoppingCart },
+  { path: '/dashboard', label: 'New Sale', icon: ShoppingCart },
   { path: '/products', label: 'Stock', icon: Package },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
