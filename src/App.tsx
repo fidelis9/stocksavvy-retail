@@ -28,10 +28,11 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route
-              path="/"
+              path="/dashboard"
               element={
                 <AppLayout>
                   <Index />
